@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARE PA Study Guide — Moe's Exam Prep</title>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #334155;
+    --accent: #38bdf8; --accent2: #818cf8; --accent3: #34d399;
+    --warn: #fb923c; --danger: #f87171;
+    --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height:1.6; }
+
+  /* NAV */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--surface2); padding: 12px 24px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; }
+  .topbar h1 { font-size:1.1rem; color:var(--accent); flex-shrink:0; }
+  .tabs { display:flex; gap:4px; overflow-x:auto; }
+  .tab { padding:8px 16px; border-radius:8px; border:none; background:transparent; color:var(--text2); cursor:pointer; font-size:0.9rem; white-space:nowrap; transition:all .2s; }
+  .tab:hover { background:var(--surface2); color:var(--text); }
+  .tab.active { background:var(--accent); color:var(--bg); font-weight:600; }
+
+  /* LAYOUT */
+  .container { max-width:1100px; margin:0 auto; padding:24px; }
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* CARDS */
+  .card { background:var(--surface); border-radius:var(--radius); padding:20px; margin-bottom:16px; border:1px solid var(--surface2); }
+  .card h2 { color:var(--accent); font-size:1.2rem; margin-bottom:12px; }
+  .card h3 { color:var(--accent2); font-size:1rem; margin:12px 0 8px; }
+
+  /* TABLES */
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.9rem; }
+  th { background:var(--surface2); color:var(--accent); padding:10px 12px; text-align:left; }
+  td { padding:10px 12px; border-bottom:1px solid var(--surface2); }
+  tr:hover td { background:rgba(56,189,248,0.05); }
+
+  /* FORMULAS */
+  .formula-box { background:var(--bg); border:2px solid var(--accent); border-radius:var(--radius); padding:16px 20px; margin:12px 0; text-align:center; }
+  .formula-box .formula { font-size:1.5rem; font-weight:700; color:var(--accent); letter-spacing:2px; }
+  .formula-box .legend { font-size:0.85rem; color:var(--text2); margin-top:8px; }
+
+  /* MNEMONICS */
+  .mnemonic { background: linear-gradient(135deg, rgba(129,140,248,0.15), rgba(52,211,153,0.1)); border-left:4px solid var(--accent2); border-radius:0 var(--radius) var(--radius) 0; padding:14px 18px; margin:10px 0; }
+  .mnemonic .phrase { font-size:1.1rem; font-weight:600; color:var(--accent2); }
+  .mnemonic .meaning { font-size:0.85rem; color:var(--text2); margin-top:4px; }
+
+  /* FLASHCARDS */
+  .flashcard-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px; }
+  .flashcard { background:var(--surface); border:1px solid var(--surface2); border-radius:var(--radius); padding:20px; cursor:pointer; min-height:120px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; transition:all .3s; position:relative; }
+  .flashcard:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .flashcard .q { font-size:1rem; font-weight:600; color:var(--warn); }
+  .flashcard .a { display:none; font-size:0.95rem; color:var(--accent3); margin-top:10px; }
+  .flashcard.flipped .q { display:none; }
+  .flashcard.flipped .a { display:block; }
+  .flashcard .hint { font-size:0.75rem; color:var(--text3); position:absolute; bottom:8px; }
+
+  /* SVG DIAGRAMS */
+  .diagram-wrap { background:var(--bg); border-radius:var(--radius); padding:16px; margin:12px 0; text-align:center; overflow-x:auto; }
+  .diagram-wrap svg { max-width:100%; height:auto; }
+
+  /* QUIZ */
+  .quiz-q { background:var(--surface); border-radius:var(--radius); padding:20px; margin-bottom:16px; border:1px solid var(--surface2); }
+  .quiz-q h4 { color:var(--warn); margin-bottom:12px; }
+  .quiz-q label { display:block; padding:10px 14px; margin:4px 0; border-radius:8px; cursor:pointer; transition:all .2s; border:1px solid transparent; }
+  .quiz-q label:hover { background:var(--surface2); }
+  .quiz-q input[type="radio"] { margin-right:10px; accent-color:var(--accent); }
+  .quiz-q .explanation { display:none; padding:12px; margin-top:10px; border-radius:8px; font-size:0.9rem; }
+  .quiz-q .explanation.correct { background:rgba(52,211,153,0.15); border:1px solid var(--accent3); color:var(--accent3); }
+  .quiz-q .explanation.wrong { background:rgba(248,113,113,0.15); border:1px solid var(--danger); color:var(--danger); }
+  .quiz-btn { padding:12px 32px; border-radius:8px; border:none; background:var(--accent); color:var(--bg); font-weight:600; font-size:1rem; cursor:pointer; margin-top:12px; }
+  .quiz-btn:hover { opacity:0.9; }
+  .score-display { font-size:1.3rem; font-weight:700; color:var(--accent); margin:16px 0; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background:var(--surface); border-radius:var(--radius); padding:16px 20px; margin-bottom:20px; }
+  .progress-bar { height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--accent3)); border-radius:4px; transition:width .5s; }
+  .progress-text { font-size:0.85rem; color:var(--text2); margin-top:8px; }
+
+  /* WARNINGS/NOTES */
+  .note { background:rgba(251,146,60,0.1); border-left:4px solid var(--warn); padding:12px 16px; border-radius:0 8px 8px 0; margin:12px 0; font-size:0.9rem; color:var(--warn); }
+
+  @media (max-width:600px) {
+    .topbar { flex-wrap:wrap; }
+    .flashcard-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>ARE PA Prep</h1>
+  <div class="tabs">
+    <button class="tab active" onclick="showSection('overview')">Overview</button>
+    <button class="tab" onclick="showSection('ada')">ADA</button>
+    <button class="tab" onclick="showSection('ibc')">IBC/Egress</button>
+    <button class="tab" onclick="showSection('site')">Site Analysis</button>
+    <button class="tab" onclick="showSection('formulas')">Formulas</button>
+    <button class="tab" onclick="showSection('flashcards')">Flashcards</button>
+    <button class="tab" onclick="showSection('quiz')">Quiz</button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ============ OVERVIEW ============ -->
+<div id="overview" class="section active">
+  <div class="progress-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong>ARE Progress</strong>
+      <span style="color:var(--accent3);">2 of 6 passed</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+    <div class="progress-text">PcM &#10003; &nbsp; PjM &#10003; &nbsp; <strong style="color:var(--accent);">PA &larr; YOU ARE HERE</strong> &nbsp; PPD &nbsp; PDD &nbsp; CE</div>
+  </div>
+
+  <div class="card">
+    <h2>PA Exam Breakdown</h2>
+    <table>
+      <tr><th>Section</th><th>Weight</th><th>Focus</th></tr>
+      <tr><td>Environmental &amp; Contextual Conditions</td><td>14–21%</td><td>Site evaluation, climate, solar, topography</td></tr>
+      <tr><td>Codes &amp; Regulations</td><td>16–22%</td><td>Zoning, ADA, IBC occupancy &amp; egress</td></tr>
+      <tr><td>Site Analysis &amp; Programming</td><td>21–27%</td><td>Grading, stormwater, utilities, parking</td></tr>
+      <tr><td>Building Analysis &amp; Programming</td><td>37–43%</td><td>Space planning, efficiency, cost, schedule</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>2026 Update:</strong> Effective April 27, 2026, NCARB is streamlining case studies — expect 3–4 shorter focused scenarios instead of 2 long ones. Check NCARB.org for latest info before your test date.
+  </div>
+
+  <div class="card">
+    <h2>12 Mnemonics to Memorize</h2>
+    <div class="mnemonic"><div class="phrase">"Thirty-two, walk on through"</div><div class="meaning">32" = minimum clear door opening width (ADA)</div></div>
+    <div class="mnemonic"><div class="phrase">"Ramp at twelve, no steeper delve"</div><div class="meaning">1:12 = maximum ramp slope (1" rise per 12" run)</div></div>
+    <div class="mnemonic"><div class="phrase">"Thirty rise, then rest your eyes"</div><div class="meaning">30" = max ramp rise before a landing is required</div></div>
+    <div class="mnemonic"><div class="phrase">"Thirty-six to pass, that aisle's got class"</div><div class="meaning">36" = minimum clear ramp width</div></div>
+    <div class="mnemonic"><div class="phrase">"Five by five, the landing's alive"</div><div class="meaning">60" x 60" = ramp landing at direction changes</div></div>
+    <div class="mnemonic"><div class="phrase">"Eighteen past the latch on the pull side catch"</div><div class="meaning">18" clear maneuvering space on pull side of door, latch side</div></div>
+    <div class="mnemonic"><div class="phrase">"Point-three for stairs, point-two elsewhere"</div><div class="meaning">0.3"/occ stair egress width, 0.2"/occ other egress (unsprinklered)</div></div>
+    <div class="mnemonic"><div class="phrase">"CIA finds the Q"</div><div class="meaning">Q = C × i × A (Rational Method for stormwater runoff)</div></div>
+    <div class="mnemonic"><div class="phrase">"Eight wide standard, eleven for the van"</div><div class="meaning">8' accessible parking, 11' van-accessible, both need 5' aisle</div></div>
+    <div class="mnemonic"><div class="phrase">"FAR = Floor over Area of the Region"</div><div class="meaning">FAR = Total Floor Area ÷ Total Lot Area</div></div>
+    <div class="mnemonic"><div class="phrase">"South-facing gets the sun embracing"</div><div class="meaning">In Northern Hemisphere, south facades get maximum solar exposure</div></div>
+    <div class="mnemonic"><div class="phrase">"One in six is van-equipped"</div><div class="meaning">1 of every 6 accessible parking spaces must be van-accessible</div></div>
+  </div>
+</div>
+
+<!-- ============ ADA ============ -->
+<div id="ada" class="section">
+  <div class="card">
+    <h2>ADA Accessibility — Key Dimensions (2010 Standards)</h2>
+
+    <h3>Ramps</h3>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#38bdf8"/></marker></defs>
+        <!-- Ground -->
+        <line x1="50" y1="170" x2="550" y2="170" stroke="#64748b" stroke-width="2"/>
+        <!-- Ramp surface -->
+        <line x1="120" y1="170" x2="420" y2="70" stroke="#38bdf8" stroke-width="3"/>
+        <!-- Top landing -->
+        <rect x="420" y="55" width="100" height="15" fill="none" stroke="#34d399" stroke-width="2" rx="2"/>
+        <text x="470" y="50" fill="#34d399" font-size="11" text-anchor="middle">60" landing</text>
+        <!-- Bottom landing -->
+        <rect x="50" y="155" width="70" height="15" fill="none" stroke="#34d399" stroke-width="2" rx="2"/>
+        <text x="85" y="150" fill="#34d399" font-size="11" text-anchor="middle">60" landing</text>
+        <!-- Rise arrow -->
+        <line x1="430" y1="170" x2="430" y2="70" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ah)"/>
+        <text x="445" y="125" fill="#fb923c" font-size="12">30" max rise</text>
+        <!-- Slope label -->
+        <text x="240" y="105" fill="#38bdf8" font-size="13" font-weight="bold" transform="rotate(-18,240,105)">1:12 max slope</text>
+        <!-- Width -->
+        <text x="270" y="190" fill="#818cf8" font-size="11" text-anchor="middle">36" min clear width</text>
+      </svg>
+    </div>
+    <table>
+      <tr><th>Requirement</th><th>Value</th></tr>
+      <tr><td>Max slope (new construction)</td><td>1:12 (8.33%)</td></tr>
+      <tr><td>Max rise per run</td><td>30" (760 mm)</td></tr>
+      <tr><td>Min clear width</td><td>36" (915 mm)</td></tr>
+      <tr><td>Landing length (top &amp; bottom)</td><td>60" min clear</td></tr>
+      <tr><td>Landing at direction change</td><td>60" × 60" min</td></tr>
+      <tr><td>Handrails required</td><td>Both sides if rise &gt; 6"</td></tr>
+      <tr><td>Handrail height</td><td>34"–38" above ramp surface</td></tr>
+      <tr><td>Handrail extension at top</td><td>12" min beyond top of ramp</td></tr>
+      <tr><td>Handrail extension at bottom</td><td>12" min beyond bottom + slope distance</td></tr>
+      <tr><td>Edge protection</td><td>Required (curb, rail, or wall)</td></tr>
+    </table>
+
+    <h3>Doors</h3>
+    <table>
+      <tr><th>Requirement</th><th>Value</th></tr>
+      <tr><td>Min clear opening width</td><td>32" (with door open 90°)</td></tr>
+      <tr><td>Max door opening force (interior)</td><td>5 lbs</td></tr>
+      <tr><td>Pull-side clearance (latch side)</td><td>18" min</td></tr>
+      <tr><td>Push-side clearance (latch + closer)</td><td>12" min</td></tr>
+      <tr><td>Threshold max height</td><td>1/2" (beveled if &gt; 1/4")</td></tr>
+      <tr><td>Door hardware height</td><td>34"–48" above floor</td></tr>
+      <tr><td>Maneuvering clearance depth (pull)</td><td>60" min</td></tr>
+      <tr><td>Closers: door closing time</td><td>5 seconds min (from 90° to 12°)</td></tr>
+    </table>
+
+    <h3>Accessible Parking</h3>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- Standard space -->
+        <rect x="30" y="20" width="120" height="140" fill="none" stroke="#38bdf8" stroke-width="2" rx="4"/>
+        <text x="90" y="90" fill="#38bdf8" font-size="13" text-anchor="middle" font-weight="bold">8' wide</text>
+        <text x="90" y="110" fill="#38bdf8" font-size="10" text-anchor="middle">Standard</text>
+        <!-- Aisle -->
+        <rect x="150" y="20" width="75" height="140" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2" stroke-dasharray="6" rx="4"/>
+        <text x="187" y="90" fill="#34d399" font-size="12" text-anchor="middle" font-weight="bold">5' aisle</text>
+        <!-- Van space -->
+        <rect x="225" y="20" width="165" height="140" fill="none" stroke="#818cf8" stroke-width="2" rx="4"/>
+        <text x="307" y="90" fill="#818cf8" font-size="13" text-anchor="middle" font-weight="bold">11' wide</text>
+        <text x="307" y="110" fill="#818cf8" font-size="10" text-anchor="middle">Van-Accessible</text>
+        <!-- Aisle -->
+        <rect x="390" y="20" width="75" height="140" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2" stroke-dasharray="6" rx="4"/>
+        <text x="427" y="90" fill="#34d399" font-size="12" text-anchor="middle" font-weight="bold">5' aisle</text>
+        <!-- Height note -->
+        <text x="520" y="60" fill="#fb923c" font-size="11" text-anchor="middle">Van clearance:</text>
+        <text x="520" y="78" fill="#fb923c" font-size="13" text-anchor="middle" font-weight="bold">98" min height</text>
+      </svg>
+    </div>
+    <table>
+      <tr><th>Total Spaces</th><th>Required Accessible</th><th>Van Spaces (of accessible)</th></tr>
+      <tr><td>1–25</td><td>1</td><td>1</td></tr>
+      <tr><td>26–50</td><td>2</td><td>1</td></tr>
+      <tr><td>51–75</td><td>3</td><td>1</td></tr>
+      <tr><td>76–100</td><td>4</td><td>1</td></tr>
+      <tr><td>101–150</td><td>5</td><td>1</td></tr>
+      <tr><td>151–200</td><td>6</td><td>1</td></tr>
+      <tr><td>201–300</td><td>7</td><td>2</td></tr>
+      <tr><td>301–400</td><td>8</td><td>2</td></tr>
+      <tr><td>401–500</td><td>9</td><td>2</td></tr>
+      <tr><td>501–1000</td><td>2% of total</td><td>1 per 6 accessible</td></tr>
+      <tr><td>1001+</td><td>20 + 1 per 100 over 1000</td><td>1 per 6 accessible</td></tr>
+    </table>
+    <div class="note"><strong>Medical facilities:</strong> 10% of patient/visitor parking must be accessible. Rehab/outpatient physical therapy: 20%.</div>
+
+    <h3>Restrooms</h3>
+    <table>
+      <tr><th>Requirement</th><th>Value</th></tr>
+      <tr><td>Wheelchair turning space</td><td>60" diameter circle or T-shaped</td></tr>
+      <tr><td>Toilet centerline from side wall</td><td>16"–18"</td></tr>
+      <tr><td>Toilet seat height</td><td>17"–19" above floor</td></tr>
+      <tr><td>Side grab bar length</td><td>42" min (12" past toilet center toward wall, 54" from rear wall)</td></tr>
+      <tr><td>Rear grab bar length</td><td>36" min</td></tr>
+      <tr><td>Grab bar height</td><td>33"–36" above floor</td></tr>
+      <tr><td>Lavatory knee clearance</td><td>27" high, 30" wide, 11"–25" deep</td></tr>
+      <tr><td>Mirror bottom edge (above counter)</td><td>40" max above floor</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============ IBC / EGRESS ============ -->
+<div id="ibc" class="section">
+  <div class="card">
+    <h2>IBC Occupancy Classifications</h2>
+    <table>
+      <tr><th>Group</th><th>Description</th><th>Examples</th></tr>
+      <tr><td>A-1</td><td>Assembly, fixed seating (viewing performances)</td><td>Theaters, concert halls</td></tr>
+      <tr><td>A-2</td><td>Assembly, food/drink</td><td>Restaurants, bars, nightclubs</td></tr>
+      <tr><td>A-3</td><td>Assembly, worship/recreation/amusement</td><td>Churches, libraries, museums, gyms</td></tr>
+      <tr><td>A-4</td><td>Assembly, indoor sports (viewing)</td><td>Arenas, skating rinks</td></tr>
+      <tr><td>A-5</td><td>Assembly, outdoor activities</td><td>Stadiums, bleachers, grandstands</td></tr>
+      <tr><td>B</td><td>Business</td><td>Offices, banks, civic admin, labs</td></tr>
+      <tr><td>E</td><td>Educational</td><td>Schools K–12, day care (6+)</td></tr>
+      <tr><td>F-1</td><td>Factory, moderate hazard</td><td>Furniture, machinery, appliances</td></tr>
+      <tr><td>F-2</td><td>Factory, low hazard</td><td>Beverages, brick, glass, ice, food</td></tr>
+      <tr><td>H</td><td>High hazard</td><td>Explosives, flammables, toxics</td></tr>
+      <tr><td>I-1</td><td>Institutional, supervised (16+ hr, ambulatory)</td><td>Group homes, rehab facilities</td></tr>
+      <tr><td>I-2</td><td>Institutional, medical/incapacitated</td><td>Hospitals, nursing homes</td></tr>
+      <tr><td>I-3</td><td>Institutional, restrained</td><td>Prisons, jails, detention</td></tr>
+      <tr><td>I-4</td><td>Institutional, day care</td><td>Adult/child day care (&gt;5 people)</td></tr>
+      <tr><td>M</td><td>Mercantile</td><td>Retail stores, markets, gas stations</td></tr>
+      <tr><td>R-1</td><td>Residential, transient</td><td>Hotels, motels, boarding houses</td></tr>
+      <tr><td>R-2</td><td>Residential, permanent (3+ units)</td><td>Apartments, dorms, condos</td></tr>
+      <tr><td>R-3</td><td>Residential, 1-2 family</td><td>Houses, townhomes, adult care &le;16</td></tr>
+      <tr><td>R-4</td><td>Residential, assisted living</td><td>Assisted living (5–16)</td></tr>
+      <tr><td>S-1</td><td>Storage, moderate hazard</td><td>Furniture, tires, wax</td></tr>
+      <tr><td>S-2</td><td>Storage, low hazard</td><td>Metal, glass, food in noncombustible containers</td></tr>
+      <tr><td>U</td><td>Utility/Miscellaneous</td><td>Barns, greenhouses, fences, tanks</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Occupant Load Factors (IBC Table 1004.5)</h2>
+    <div class="note"><strong>IBC Edition Note:</strong> In IBC 2015 and earlier, Business = 100 gross SF/person. In IBC 2018+ (including 2021), Business = <strong>150 gross SF/person</strong>. Confirm which edition NCARB is referencing — the ARE currently aligns with IBC 2021.</div>
+    <table>
+      <tr><th>Function of Space</th><th>Occupant Load Factor</th><th>Gross/Net</th></tr>
+      <tr><td>Assembly — standing space</td><td>5 SF/person</td><td>Net</td></tr>
+      <tr><td>Assembly — unconcentrated (tables &amp; chairs)</td><td>15 SF/person</td><td>Net</td></tr>
+      <tr><td>Assembly — concentrated (chairs only)</td><td>7 SF/person</td><td>Net</td></tr>
+      <tr><td>Business</td><td>150 SF/person</td><td>Gross</td></tr>
+      <tr><td>Educational — classroom</td><td>20 SF/person</td><td>Net</td></tr>
+      <tr><td>Educational — shops/labs/vocational</td><td>50 SF/person</td><td>Net</td></tr>
+      <tr><td>Exercise rooms with equipment</td><td>50 SF/person</td><td>Gross</td></tr>
+      <tr><td>Exercise rooms without equipment</td><td>15 SF/person</td><td>Gross</td></tr>
+      <tr><td>Industrial — general</td><td>100 SF/person</td><td>Gross</td></tr>
+      <tr><td>Mercantile — basement/grade floor</td><td>30 SF/person</td><td>Gross</td></tr>
+      <tr><td>Mercantile — upper floors</td><td>60 SF/person</td><td>Gross</td></tr>
+      <tr><td>Residential</td><td>200 SF/person</td><td>Gross</td></tr>
+      <tr><td>Storage — general</td><td>300 SF/person</td><td>Gross</td></tr>
+      <tr><td>Kitchens — commercial</td><td>200 SF/person</td><td>Gross</td></tr>
+      <tr><td>Library — reading rooms</td><td>50 SF/person</td><td>Net</td></tr>
+      <tr><td>Library — stacks</td><td>100 SF/person</td><td>Gross</td></tr>
+      <tr><td>Locker rooms</td><td>50 SF/person</td><td>Gross</td></tr>
+      <tr><td>Parking garage</td><td>200 SF/person</td><td>Gross</td></tr>
+    </table>
+    <div class="mnemonic"><div class="phrase">Gross vs. Net reminder:</div><div class="meaning"><strong>Gross</strong> = entire floor area (walls, corridors, mechanical). <strong>Net</strong> = actual usable/occupiable space only. If the table says "net," you measure just the room — not hallways or wall thickness.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Egress Width Calculations</h2>
+    <div class="formula-box">
+      <div class="formula">Width = Occupants × Factor</div>
+      <div class="legend">Factor depends on component type and whether building is sprinklered</div>
+    </div>
+    <table>
+      <tr><th>Component</th><th>Unsprinklered</th><th>Sprinklered</th></tr>
+      <tr><td>Stairways</td><td>0.3" per occupant</td><td>0.2" per occupant</td></tr>
+      <tr><td>All other egress (corridors, doors, ramps)</td><td>0.2" per occupant</td><td>0.15" per occupant</td></tr>
+    </table>
+    <h3>Example Calculation</h3>
+    <div class="card" style="background:var(--bg);">
+      <p><strong>Problem:</strong> An unsprinklered office floor is 15,000 SF. How wide must the stairway be?</p>
+      <p style="margin-top:8px;">Step 1: Occupant load = 15,000 ÷ 150 = <strong>100 occupants</strong></p>
+      <p>Step 2: Stair width = 100 × 0.3" = <strong>30"</strong></p>
+      <p>Step 3: But IBC minimum stair width = <strong>44"</strong> (for 50+ occupants), so use <strong>44"</strong></p>
+      <p style="color:var(--warn); margin-top:8px;">Always check: calculated width vs. code minimum — use whichever is GREATER.</p>
+    </div>
+    <h3>IBC Minimum Widths</h3>
+    <table>
+      <tr><th>Component</th><th>Min Width</th></tr>
+      <tr><td>Corridor (&ge;50 occupants)</td><td>44"</td></tr>
+      <tr><td>Corridor (&lt;50 occupants, non-healthcare)</td><td>36"</td></tr>
+      <tr><td>Stairway (&ge;50 occupants)</td><td>44"</td></tr>
+      <tr><td>Stairway (&lt;50 occupants)</td><td>36"</td></tr>
+      <tr><td>Door</td><td>32" clear</td></tr>
+    </table>
+    <h3>Travel Distance Limits</h3>
+    <table>
+      <tr><th>Occupancy</th><th>Unsprinklered</th><th>Sprinklered</th></tr>
+      <tr><td>Most occupancies (B, M, F, S)</td><td>200 ft</td><td>250 ft</td></tr>
+      <tr><td>Assembly (A)</td><td>200 ft</td><td>250 ft</td></tr>
+      <tr><td>High Hazard (H)</td><td>75 ft</td><td>75 ft</td></tr>
+      <tr><td>Residential (R)</td><td>200 ft</td><td>250 ft</td></tr>
+    </table>
+    <div class="note"><strong>Dead-end corridors:</strong> Generally max 20' (unsprinklered) or 50' (sprinklered) in most occupancy groups. Check IBC Table 1020.4.</div>
+  </div>
+</div>
+
+<!-- ============ SITE ANALYSIS ============ -->
+<div id="site" class="section">
+  <div class="card">
+    <h2>Solar Orientation</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Compass -->
+        <circle cx="200" cy="200" r="150" fill="none" stroke="#334155" stroke-width="2"/>
+        <!-- Directions -->
+        <text x="200" y="40" fill="#f87171" font-size="16" font-weight="bold" text-anchor="middle">N</text>
+        <text x="200" y="375" fill="#fb923c" font-size="16" font-weight="bold" text-anchor="middle">S</text>
+        <text x="365" y="205" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">E</text>
+        <text x="35" y="205" fill="#818cf8" font-size="16" font-weight="bold" text-anchor="middle">W</text>
+        <!-- Building -->
+        <rect x="160" y="160" width="80" height="80" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="2" rx="4"/>
+        <text x="200" y="205" fill="#38bdf8" font-size="11" text-anchor="middle">BUILDING</text>
+        <!-- Sun path arc -->
+        <path d="M 80 280 Q 200 20 320 280" fill="none" stroke="#fb923c" stroke-width="2" stroke-dasharray="6"/>
+        <circle cx="200" cy="65" r="12" fill="#fb923c"/>
+        <text x="200" y="70" fill="#0f172a" font-size="10" text-anchor="middle">&#9788;</text>
+        <!-- Labels -->
+        <text x="90" y="310" fill="#818cf8" font-size="10">Morning sun</text>
+        <text x="280" y="310" fill="#818cf8" font-size="10">Afternoon sun</text>
+        <text x="200" y="130" fill="#fb923c" font-size="11" text-anchor="middle">Max exposure at noon</text>
+        <!-- Annotations -->
+        <text x="200" y="340" fill="#34d399" font-size="10" text-anchor="middle">South = max solar gain (Northern Hemisphere)</text>
+        <text x="200" y="356" fill="#34d399" font-size="10" text-anchor="middle">North = minimal direct sun, diffuse light</text>
+      </svg>
+    </div>
+    <table>
+      <tr><th>Facade</th><th>Solar Characteristics</th><th>Best For</th></tr>
+      <tr><td>South</td><td>Maximum solar gain, high winter sun, low summer</td><td>Passive solar heating, daylighting, solar panels</td></tr>
+      <tr><td>North</td><td>Minimal direct sun, consistent diffuse light</td><td>Art studios, galleries, server rooms</td></tr>
+      <tr><td>East</td><td>Morning sun, cool-warm transition</td><td>Bedrooms, breakfast areas</td></tr>
+      <tr><td>West</td><td>Intense afternoon sun, heat gain</td><td>Needs shading — worst for glazing in hot climates</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Topography &amp; Contours</h2>
+    <table>
+      <tr><th>Concept</th><th>Rule</th></tr>
+      <tr><td>Contour lines close together</td><td>Steep slope</td></tr>
+      <tr><td>Contour lines far apart</td><td>Gentle slope</td></tr>
+      <tr><td>Slope calculation</td><td>Rise ÷ Run (or elevation change ÷ horizontal distance)</td></tr>
+      <tr><td>Contours crossing a stream</td><td>V-shapes point UPSTREAM</td></tr>
+      <tr><td>Contours crossing a ridge</td><td>V-shapes point DOWNHILL</td></tr>
+      <tr><td>Cut &amp; Fill</td><td>Contour lines rerouted closer = cut; farther apart = fill</td></tr>
+      <tr><td>Max accessible path slope</td><td>1:20 (5%) without handrails</td></tr>
+      <tr><td>Max driveway slope</td><td>Typically 10%–15% depending on jurisdiction</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Soil &amp; Bearing Capacity</h2>
+    <table>
+      <tr><th>Soil Type</th><th>Presumptive Bearing Capacity (psf)</th></tr>
+      <tr><td>Crystalline bedrock</td><td>12,000</td></tr>
+      <tr><td>Sedimentary rock</td><td>4,000</td></tr>
+      <tr><td>Gravel (GW, GP)</td><td>3,000</td></tr>
+      <tr><td>Sand (SW, SP)</td><td>2,000</td></tr>
+      <tr><td>Clay (medium–stiff)</td><td>1,500–2,000</td></tr>
+      <tr><td>Soft clay / silt</td><td>May require special foundations</td></tr>
+    </table>
+    <div class="note"><strong>IBC Table 1806.2</strong> has the full presumptive bearing values. Higher bearing = can support more load per square foot. Rock > gravel > sand > clay.</div>
+  </div>
+
+  <div class="card">
+    <h2>Zoning Concepts</h2>
+    <table>
+      <tr><th>Term</th><th>Definition</th></tr>
+      <tr><td>Setback</td><td>Required minimum distance from property line to building</td></tr>
+      <tr><td>FAR (Floor Area Ratio)</td><td>Total building floor area ÷ total lot area</td></tr>
+      <tr><td>Lot coverage</td><td>Building footprint area ÷ total lot area (as %)</td></tr>
+      <tr><td>Height limit</td><td>Maximum building height allowed by zoning</td></tr>
+      <tr><td>Easement</td><td>Legal right for others to use a portion of your land</td></tr>
+      <tr><td>Variance</td><td>Exception from zoning requirements granted by a board</td></tr>
+      <tr><td>Right-of-way</td><td>Public passage over private land (roads, utilities)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============ FORMULAS ============ -->
+<div id="formulas" class="section">
+  <div class="card">
+    <h2>Essential Formulas for PA</h2>
+
+    <h3>FAR (Floor Area Ratio)</h3>
+    <div class="formula-box">
+      <div class="formula">FAR = Total Floor Area ÷ Total Lot Area</div>
+      <div class="legend">Unitless ratio. FAR of 2.0 means you can build 2× the lot area in total floor space.</div>
+    </div>
+    <div class="card" style="background:var(--bg);">
+      <p><strong>Example:</strong> Lot = 10,000 SF, FAR = 3.0 → Max floor area = 30,000 SF</p>
+      <p>Could be 3 floors × 10,000 SF, or 6 floors × 5,000 SF, etc.</p>
+    </div>
+
+    <h3>Lot Coverage</h3>
+    <div class="formula-box">
+      <div class="formula">Coverage = Footprint ÷ Lot Area × 100</div>
+      <div class="legend">Usually expressed as a percentage. A 60% max coverage means 40% must be open.</div>
+    </div>
+
+    <h3>Building Efficiency (Net-to-Gross Ratio)</h3>
+    <div class="formula-box">
+      <div class="formula">Efficiency = Net Usable Area ÷ Gross Floor Area</div>
+      <div class="legend">Typical ranges: Office 80–85%, Residential 75–80%, Hospital 55–65%, Lab 50–60%</div>
+    </div>
+    <table>
+      <tr><th>Building Type</th><th>Typical Efficiency</th></tr>
+      <tr><td>Office</td><td>80–85%</td></tr>
+      <tr><td>Residential</td><td>75–80%</td></tr>
+      <tr><td>Retail</td><td>75–80%</td></tr>
+      <tr><td>Hospital</td><td>55–65%</td></tr>
+      <tr><td>Laboratory</td><td>50–60%</td></tr>
+      <tr><td>School</td><td>60–70%</td></tr>
+    </table>
+    <div class="card" style="background:var(--bg);">
+      <p><strong>Example:</strong> Client needs 40,000 SF net usable office space. Efficiency = 82%.</p>
+      <p>Gross area needed = 40,000 ÷ 0.82 = <strong>48,780 SF</strong></p>
+    </div>
+
+    <h3>Occupant Load</h3>
+    <div class="formula-box">
+      <div class="formula">Occupants = Floor Area ÷ Load Factor</div>
+      <div class="legend">Use gross or net area depending on the occupancy type per IBC Table 1004.5</div>
+    </div>
+
+    <h3>Stormwater — Rational Method</h3>
+    <div class="formula-box">
+      <div class="formula">Q = C × i × A</div>
+      <div class="legend">Q = peak discharge (cfs) &nbsp;|&nbsp; C = runoff coefficient (0–1) &nbsp;|&nbsp; i = rainfall intensity (in/hr) &nbsp;|&nbsp; A = drainage area (acres)</div>
+    </div>
+    <table>
+      <tr><th>Surface Type</th><th>Runoff Coefficient (C)</th></tr>
+      <tr><td>Rooftops / pavement</td><td>0.85–0.95</td></tr>
+      <tr><td>Gravel surfaces</td><td>0.40–0.60</td></tr>
+      <tr><td>Lawns (flat, sandy soil)</td><td>0.05–0.10</td></tr>
+      <tr><td>Lawns (steep, clay soil)</td><td>0.25–0.35</td></tr>
+      <tr><td>Forest / wooded</td><td>0.05–0.25</td></tr>
+    </table>
+    <div class="mnemonic"><div class="phrase">"CIA finds the Q"</div><div class="meaning">C = Coefficient, i = Intensity, A = Area → Q = peak runoff. Higher C (more impervious) = more runoff.</div></div>
+
+    <h3>Slope</h3>
+    <div class="formula-box">
+      <div class="formula">Slope = Rise ÷ Run</div>
+      <div class="legend">Express as ratio (1:12), fraction, or percent (8.33%). Multiply decimal by 100 for percent.</div>
+    </div>
+
+    <h3>Ramp Length</h3>
+    <div class="formula-box">
+      <div class="formula">Length = Rise × 12</div>
+      <div class="legend">At max 1:12 slope. For a 30" rise: 30 × 12 = 360" = 30 ft of ramp run.</div>
+    </div>
+
+    <h3>Parking Ratio</h3>
+    <div class="formula-box">
+      <div class="formula">Spaces = Building SF ÷ Ratio (per zoning)</div>
+      <div class="legend">Example: zoning requires 1 space per 300 SF of office. 15,000 SF office = 50 spaces.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FLASHCARDS ============ -->
+<div id="flashcards" class="section">
+  <div class="card">
+    <h2>Click to Flip</h2>
+    <div class="flashcard-grid">
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Min clear door width (ADA)?</div>
+        <div class="a">32 inches<br>(with door at 90°)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Max ramp slope (new construction)?</div>
+        <div class="a">1:12<br>(8.33%)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Max ramp rise before landing?</div>
+        <div class="a">30 inches</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Min ramp width?</div>
+        <div class="a">36 inches</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Ramp landing size at direction change?</div>
+        <div class="a">60" × 60"</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Egress factor: stairway (unsprinklered)?</div>
+        <div class="a">0.3 inch per occupant</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Egress factor: corridor (unsprinklered)?</div>
+        <div class="a">0.2 inch per occupant</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Egress factor: stairway (sprinklered)?</div>
+        <div class="a">0.2 inch per occupant</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">IBC Business occupant load factor (2021)?</div>
+        <div class="a">150 gross SF/person<br>(was 100 before 2018)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Assembly standing space load factor?</div>
+        <div class="a">5 net SF/person</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Educational classroom load factor?</div>
+        <div class="a">20 net SF/person</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Rational Method formula?</div>
+        <div class="a">Q = C × i × A<br>Q=cfs, C=runoff coeff, i=rain intensity, A=acres</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">FAR formula?</div>
+        <div class="a">Total Floor Area ÷ Total Lot Area</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Standard accessible parking width?</div>
+        <div class="a">8 ft wide + 5 ft aisle</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Van-accessible parking width?</div>
+        <div class="a">11 ft wide + 5 ft aisle<br>98" min vertical clearance</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">What fraction of accessible spaces must be van-accessible?</div>
+        <div class="a">1 of every 6</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Pull-side door clearance (latch side)?</div>
+        <div class="a">18 inches minimum</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Typical office building efficiency?</div>
+        <div class="a">80–85%<br>(net usable ÷ gross)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Typical hospital efficiency?</div>
+        <div class="a">55–65%</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">South facade (Northern Hemisphere)?</div>
+        <div class="a">Maximum solar gain.<br>Best for passive solar heating &amp; daylighting.</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Contour V-shapes near a stream point...?</div>
+        <div class="a">UPSTREAM<br>(V points uphill / toward higher elevation)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Max travel distance (sprinklered, most occupancies)?</div>
+        <div class="a">250 feet</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Runoff coefficient for pavement/rooftops?</div>
+        <div class="a">0.85 – 0.95<br>(nearly all rain becomes runoff)</div>
+        <div class="hint">click to flip</div>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('flipped')">
+        <div class="q">Toilet centerline from side wall (ADA)?</div>
+        <div class="a">16" – 18"</div>
+        <div class="hint">click to flip</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div id="quiz" class="section">
+  <div class="card">
+    <h2>Practice Quiz — 15 Questions</h2>
+    <p style="color:var(--text2); margin-bottom:16px;">Test yourself. Pick your answer, then click "Grade My Quiz" at the bottom.</p>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <h4>1. An unsprinklered office building has a floor area of 30,000 gross SF. What is the occupant load per IBC 2021?</h4>
+    <label><input type="radio" name="q1" value="a"> 150 occupants</label>
+    <label><input type="radio" name="q1" value="b"> 300 occupants</label>
+    <label><input type="radio" name="q1" value="c"> 200 occupants</label>
+    <label><input type="radio" name="q1" value="d"> 100 occupants</label>
+    <div class="explanation">30,000 SF ÷ 150 SF/person (IBC 2021 Business) = 200 occupants. Note: Under the older 100 SF/person factor it would be 300 — know which edition you're being tested on.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="b">
+    <h4>2. What is the minimum clear width of a ramp per ADA?</h4>
+    <label><input type="radio" name="q2" value="a"> 32 inches</label>
+    <label><input type="radio" name="q2" value="b"> 36 inches</label>
+    <label><input type="radio" name="q2" value="c"> 44 inches</label>
+    <label><input type="radio" name="q2" value="d"> 48 inches</label>
+    <div class="explanation">ADA requires a minimum 36" clear width for ramps. 32" is the door clear width — don't mix them up!</div>
+  </div>
+
+  <div class="quiz-q" data-correct="a">
+    <h4>3. A lot is 20,000 SF with a FAR of 2.5. What is the maximum total floor area?</h4>
+    <label><input type="radio" name="q3" value="a"> 50,000 SF</label>
+    <label><input type="radio" name="q3" value="b"> 40,000 SF</label>
+    <label><input type="radio" name="q3" value="c"> 8,000 SF</label>
+    <label><input type="radio" name="q3" value="d"> 25,000 SF</label>
+    <div class="explanation">FAR = Total Floor Area ÷ Lot Area. So max floor area = 20,000 × 2.5 = 50,000 SF.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="d">
+    <h4>4. Using the rational method, a 5-acre site has C=0.6 and rainfall intensity of 3 in/hr. What is Q?</h4>
+    <label><input type="radio" name="q4" value="a"> 15 cfs</label>
+    <label><input type="radio" name="q4" value="b"> 1.5 cfs</label>
+    <label><input type="radio" name="q4" value="c"> 0.9 cfs</label>
+    <label><input type="radio" name="q4" value="d"> 9 cfs</label>
+    <div class="explanation">Q = C × i × A = 0.6 × 3 × 5 = 9 cfs.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <h4>5. What is the egress width factor for stairways in an unsprinklered building?</h4>
+    <label><input type="radio" name="q5" value="a"> 0.15 inch per occupant</label>
+    <label><input type="radio" name="q5" value="b"> 0.2 inch per occupant</label>
+    <label><input type="radio" name="q5" value="c"> 0.3 inch per occupant</label>
+    <label><input type="radio" name="q5" value="d"> 0.4 inch per occupant</label>
+    <div class="explanation">0.3" per occupant for stairways (unsprinklered). Sprinklered = 0.2". For corridors: 0.2" unsprinklered, 0.15" sprinklered.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="b">
+    <h4>6. What is the maximum door opening force for an accessible interior door?</h4>
+    <label><input type="radio" name="q6" value="a"> 3 lbs</label>
+    <label><input type="radio" name="q6" value="b"> 5 lbs</label>
+    <label><input type="radio" name="q6" value="c"> 8.5 lbs</label>
+    <label><input type="radio" name="q6" value="d"> 15 lbs</label>
+    <div class="explanation">5 lbs max opening force for interior accessible doors. Fire doors may require more but must have closers set to minimum force.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="a">
+    <h4>7. A parking lot has 200 total spaces. How many must be accessible?</h4>
+    <label><input type="radio" name="q7" value="a"> 6</label>
+    <label><input type="radio" name="q7" value="b"> 4</label>
+    <label><input type="radio" name="q7" value="c"> 8</label>
+    <label><input type="radio" name="q7" value="d"> 10</label>
+    <div class="explanation">Per ADA Table 208.2: 151–200 total spaces = 6 accessible spaces required, with 1 of those being van-accessible.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="d">
+    <h4>8. Which facade receives the most intense afternoon heat gain?</h4>
+    <label><input type="radio" name="q8" value="a"> South</label>
+    <label><input type="radio" name="q8" value="b"> North</label>
+    <label><input type="radio" name="q8" value="c"> East</label>
+    <label><input type="radio" name="q8" value="d"> West</label>
+    <div class="explanation">West gets intense afternoon sun at a low angle (hard to shade). South gets more total solar but at a higher angle (easier to control with overhangs).</div>
+  </div>
+
+  <div class="quiz-q" data-correct="b">
+    <h4>9. A client needs 50,000 SF of net usable hospital space. At 60% efficiency, what gross area is needed?</h4>
+    <label><input type="radio" name="q9" value="a"> 30,000 SF</label>
+    <label><input type="radio" name="q9" value="b"> 83,333 SF</label>
+    <label><input type="radio" name="q9" value="c"> 75,000 SF</label>
+    <label><input type="radio" name="q9" value="d"> 50,000 SF</label>
+    <div class="explanation">Gross = Net ÷ Efficiency = 50,000 ÷ 0.60 = 83,333 SF. Hospitals have low efficiency due to corridors, mechanical, and support spaces.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <h4>10. Contour lines forming V-shapes near a stream point in which direction?</h4>
+    <label><input type="radio" name="q10" value="a"> Downhill</label>
+    <label><input type="radio" name="q10" value="b"> Parallel to flow</label>
+    <label><input type="radio" name="q10" value="c"> Upstream (toward higher elevation)</label>
+    <label><input type="radio" name="q10" value="d"> Perpendicular to flow</label>
+    <div class="explanation">At streams/valleys, contour V's point UPSTREAM. At ridges, V's point DOWNHILL. This is a classic ARE question.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="a">
+    <h4>11. The pull side of a door requires how much clearance on the latch side?</h4>
+    <label><input type="radio" name="q11" value="a"> 18 inches</label>
+    <label><input type="radio" name="q11" value="b"> 12 inches</label>
+    <label><input type="radio" name="q11" value="c"> 24 inches</label>
+    <label><input type="radio" name="q11" value="d"> 6 inches</label>
+    <div class="explanation">18" on pull side, 12" on push side (with closer and latch). This space lets a wheelchair user reach the handle while clearing the door swing.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="b">
+    <h4>12. What is the max travel distance to an exit in a sprinklered business occupancy?</h4>
+    <label><input type="radio" name="q12" value="a"> 200 feet</label>
+    <label><input type="radio" name="q12" value="b"> 250 feet</label>
+    <label><input type="radio" name="q12" value="c"> 300 feet</label>
+    <label><input type="radio" name="q12" value="d"> 150 feet</label>
+    <div class="explanation">250 ft for sprinklered buildings in most occupancies (B, M, R, etc.). Unsprinklered = 200 ft. High hazard (H) = 75 ft regardless.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="c">
+    <h4>13. A 10,000 SF lot with max lot coverage of 60%. Building is 3 stories. What is the max building footprint?</h4>
+    <label><input type="radio" name="q13" value="a"> 18,000 SF</label>
+    <label><input type="radio" name="q13" value="b"> 3,333 SF</label>
+    <label><input type="radio" name="q13" value="c"> 6,000 SF</label>
+    <label><input type="radio" name="q13" value="d"> 10,000 SF</label>
+    <div class="explanation">Lot coverage limits the FOOTPRINT, not total floor area. 10,000 × 0.60 = 6,000 SF max footprint. Total floor area would be 6,000 × 3 = 18,000 SF (but that's FAR, not coverage).</div>
+  </div>
+
+  <div class="quiz-q" data-correct="d">
+    <h4>14. An assembly space with tables and chairs is 3,000 net SF. What is the occupant load?</h4>
+    <label><input type="radio" name="q14" value="a"> 600</label>
+    <label><input type="radio" name="q14" value="b"> 428</label>
+    <label><input type="radio" name="q14" value="c"> 20</label>
+    <label><input type="radio" name="q14" value="d"> 200</label>
+    <div class="explanation">Assembly unconcentrated (tables &amp; chairs) = 15 net SF/person. 3,000 ÷ 15 = 200 occupants.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="a">
+    <h4>15. The ADA toilet seat height must be between:</h4>
+    <label><input type="radio" name="q15" value="a"> 17" – 19" above finished floor</label>
+    <label><input type="radio" name="q15" value="b"> 15" – 17" above finished floor</label>
+    <label><input type="radio" name="q15" value="c"> 19" – 21" above finished floor</label>
+    <label><input type="radio" name="q15" value="d"> 14" – 16" above finished floor</label>
+    <div class="explanation">ADA requires toilet seat height of 17" to 19" above the finished floor, measured to the top of the seat.</div>
+  </div>
+
+  <button class="quiz-btn" onclick="gradeQuiz()">Grade My Quiz</button>
+  <div id="quizScore" class="score-display"></div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function gradeQuiz() {
+  const questions = document.querySelectorAll('.quiz-q');
+  let correct = 0;
+  let total = questions.length;
+
+  questions.forEach((q, i) => {
+    const correctAnswer = q.getAttribute('data-correct');
+    const selected = q.querySelector(`input[name="q${i+1}"]:checked`);
+    const explanation = q.querySelector('.explanation');
+
+    if (selected && selected.value === correctAnswer) {
+      correct++;
+      explanation.classList.remove('wrong');
+      explanation.classList.add('correct');
+      explanation.style.display = 'block';
+      explanation.innerHTML = '&#10003; Correct! ' + explanation.textContent;
+    } else {
+      explanation.classList.remove('correct');
+      explanation.classList.add('wrong');
+      explanation.style.display = 'block';
+      const correctLetter = correctAnswer.toUpperCase();
+      explanation.innerHTML = '&#10007; Incorrect. The answer is ' + correctLetter + '. ' + explanation.textContent;
+    }
+  });
+
+  const pct = Math.round((correct / total) * 100);
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.textContent = `Score: ${correct}/${total} (${pct}%)`;
+  if (pct >= 80) scoreEl.style.color = 'var(--accent3)';
+  else if (pct >= 60) scoreEl.style.color = 'var(--warn)';
+  else scoreEl.style.color = 'var(--danger)';
+
+  scoreEl.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
