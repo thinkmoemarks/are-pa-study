@@ -11,6 +11,7 @@
     --warn: #fb923c; --danger: #f87171;
     --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
     --radius: 12px;
+    color-scheme: dark;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height:1.6; }
@@ -85,9 +86,49 @@
   /* WARNINGS/NOTES */
   .note { background:rgba(251,146,60,0.1); border-left:4px solid var(--warn); padding:12px 16px; border-radius:0 8px 8px 0; margin:12px 0; font-size:0.9rem; color:var(--warn); }
 
+
+  /* BUILDING ANALYSIS */
+  .ba-q { background:var(--surface); border-radius:var(--radius); padding:20px; margin-bottom:16px; border:1px solid var(--surface2); }
+  .ba-q h4 { color:var(--warn); margin-bottom:12px; }
+  .ba-q label { display:block; padding:10px 14px; margin:4px 0; border-radius:8px; cursor:pointer; transition:all .2s; border:1px solid transparent; }
+  .ba-q label:hover { background:var(--surface2); }
+  .ba-q input[type="radio"] { margin-right:10px; accent-color:var(--accent); }
+  .ba-q .explanation { display:none; padding:12px; margin-top:10px; border-radius:8px; font-size:0.9rem; }
+  .ba-q .explanation.correct { display:block; background:rgba(52,211,153,0.15); border:1px solid var(--accent3); color:var(--accent3); }
+  .ba-q .explanation.wrong { display:block; background:rgba(248,113,113,0.15); border:1px solid var(--danger); color:var(--danger); }
+  table.adj { min-width:520px; }
+  table.adj td { text-align:center; font-size:1.1rem; }
+  table.adj th { font-size:0.8rem; }
+  .a1 { color:var(--accent3); } .a2 { color:var(--accent); } .a3 { color:var(--danger); }
+  .adj-key { display:flex; flex-wrap:wrap; gap:14px; font-size:0.85rem; color:var(--text2); }
+  svg .l1 { stroke:var(--accent3); stroke-width:5; }
+  svg .l2 { stroke:var(--accent); stroke-width:2; stroke-dasharray:6 5; }
+  svg .b { fill:var(--surface2); stroke:var(--accent2); stroke-width:2; }
+  svg .b.mech { stroke:var(--danger); }
+  svg .bt { fill:var(--text); font-size:13px; text-anchor:middle; font-weight:600; }
+  svg .axis { stroke:var(--text3); stroke-width:2; }
+  svg .arrowhead { fill:var(--text3); }
+  svg .dot { fill:var(--accent2); }
+  svg .st { fill:var(--text); font-size:13px; text-anchor:middle; font-weight:600; }
+  svg .ss { fill:var(--text2); font-size:11px; text-anchor:middle; }
+  svg .seg1 { fill:var(--accent); } svg .seg2 { fill:var(--accent2); } svg .seg3 { fill:var(--warn); }
+  svg .segt { fill:var(--bg); font-size:13px; font-weight:700; text-anchor:middle; }
+  svg .grid line { stroke:var(--surface2); stroke-width:1; }
+  svg .rl { fill:var(--text2); font-size:12px; text-anchor:end; }
+  svg .span { fill:var(--accent3); }
+
+  /* LISTEN MODE */
+  .listen { display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0; }
+  .listen button, .listen select { padding:7px 12px; border-radius:8px; border:1px solid var(--surface2); background:var(--bg); color:var(--text); font-size:0.85rem; cursor:pointer; }
+  .listen button.on { background:var(--accent3); color:var(--bg); border-color:var(--accent3); font-weight:600; }
+  .listen button:focus-visible, .tab:focus-visible, .quiz-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .speaking { outline:2px solid var(--accent3); outline-offset:4px; border-radius:6px; }
+
   @media (max-width:600px) {
     .topbar { flex-wrap:wrap; }
     .flashcard-grid { grid-template-columns:1fr; }
+    .container { padding:16px; }
+    .listen { margin-left:0; }
   }
 </style>
 </head>
@@ -100,9 +141,19 @@
     <button class="tab" onclick="showSection('ada')">ADA</button>
     <button class="tab" onclick="showSection('ibc')">IBC/Egress</button>
     <button class="tab" onclick="showSection('site')">Site Analysis</button>
+    <button class="tab" onclick="showSection('building')">Building Analysis</button>
     <button class="tab" onclick="showSection('formulas')">Formulas</button>
     <button class="tab" onclick="showSection('flashcards')">Flashcards</button>
     <button class="tab" onclick="showSection('quiz')">Quiz</button>
+  </div>
+  <div class="listen" aria-label="Listen mode">
+    <button id="listenBtn" type="button" title="Read this tab aloud">▶ Listen</button>
+    <select id="listenRate" aria-label="Reading speed">
+      <option value="0.8">0.8×</option>
+      <option value="1" selected>1×</option>
+      <option value="1.25">1.25×</option>
+      <option value="1.5">1.5×</option>
+    </select>
   </div>
 </div>
 
@@ -189,7 +240,7 @@
       <tr><td>Handrails required</td><td>Both sides if rise &gt; 6"</td></tr>
       <tr><td>Handrail height</td><td>34"–38" above ramp surface</td></tr>
       <tr><td>Handrail extension at top</td><td>12" min beyond top of ramp</td></tr>
-      <tr><td>Handrail extension at bottom</td><td>12" min beyond bottom + slope distance</td></tr>
+      <tr><td>Handrail extension at bottom</td><td>12" min horizontal beyond bottom of ramp</td></tr>
       <tr><td>Edge protection</td><td>Required (curb, rail, or wall)</td></tr>
     </table>
 
@@ -275,15 +326,15 @@
       <tr><td>F-1</td><td>Factory, moderate hazard</td><td>Furniture, machinery, appliances</td></tr>
       <tr><td>F-2</td><td>Factory, low hazard</td><td>Beverages, brick, glass, ice, food</td></tr>
       <tr><td>H</td><td>High hazard</td><td>Explosives, flammables, toxics</td></tr>
-      <tr><td>I-1</td><td>Institutional, supervised (16+ hr, ambulatory)</td><td>Group homes, rehab facilities</td></tr>
+      <tr><td>I-1</td><td>Institutional, 24-hr supervised care (more than 16 people, ambulatory)</td><td>Group homes, rehab facilities</td></tr>
       <tr><td>I-2</td><td>Institutional, medical/incapacitated</td><td>Hospitals, nursing homes</td></tr>
       <tr><td>I-3</td><td>Institutional, restrained</td><td>Prisons, jails, detention</td></tr>
       <tr><td>I-4</td><td>Institutional, day care</td><td>Adult/child day care (&gt;5 people)</td></tr>
       <tr><td>M</td><td>Mercantile</td><td>Retail stores, markets, gas stations</td></tr>
       <tr><td>R-1</td><td>Residential, transient</td><td>Hotels, motels, boarding houses</td></tr>
       <tr><td>R-2</td><td>Residential, permanent (3+ units)</td><td>Apartments, dorms, condos</td></tr>
-      <tr><td>R-3</td><td>Residential, 1-2 family</td><td>Houses, townhomes, adult care &le;16</td></tr>
-      <tr><td>R-4</td><td>Residential, assisted living</td><td>Assisted living (5–16)</td></tr>
+      <tr><td>R-3</td><td>Residential, 1-2 family</td><td>Houses, townhomes, care facilities &le;5</td></tr>
+      <tr><td>R-4</td><td>Residential, assisted living</td><td>Assisted living (6–16)</td></tr>
       <tr><td>S-1</td><td>Storage, moderate hazard</td><td>Furniture, tires, wax</td></tr>
       <tr><td>S-2</td><td>Storage, low hazard</td><td>Metal, glass, food in noncombustible containers</td></tr>
       <tr><td>U</td><td>Utility/Miscellaneous</td><td>Barns, greenhouses, fences, tanks</td></tr>
@@ -324,10 +375,11 @@
       <div class="legend">Factor depends on component type and whether building is sprinklered</div>
     </div>
     <table>
-      <tr><th>Component</th><th>Unsprinklered</th><th>Sprinklered</th></tr>
+      <tr><th>Component</th><th>Standard</th><th>Sprinklered + voice alarm</th></tr>
       <tr><td>Stairways</td><td>0.3" per occupant</td><td>0.2" per occupant</td></tr>
       <tr><td>All other egress (corridors, doors, ramps)</td><td>0.2" per occupant</td><td>0.15" per occupant</td></tr>
     </table>
+    <div class="note"><strong>Lower factors need both:</strong> the building must be fully sprinklered AND have an emergency voice/alarm communication system (IBC 1005.3). Sprinklers alone keep 0.3" and 0.2". Not allowed for Group H or I-2.</div>
     <h3>Example Calculation</h3>
     <div class="card" style="background:var(--bg);">
       <p><strong>Problem:</strong> An unsprinklered office floor is 15,000 SF. How wide must the stairway be?</p>
@@ -347,11 +399,11 @@
     </table>
     <h3>Travel Distance Limits</h3>
     <table>
-      <tr><th>Occupancy</th><th>Unsprinklered</th><th>Sprinklered</th></tr>
-      <tr><td>Most occupancies (B, M, F, S)</td><td>200 ft</td><td>250 ft</td></tr>
-      <tr><td>Assembly (A)</td><td>200 ft</td><td>250 ft</td></tr>
-      <tr><td>High Hazard (H)</td><td>75 ft</td><td>75 ft</td></tr>
-      <tr><td>Residential (R)</td><td>200 ft</td><td>250 ft</td></tr>
+      <tr><th>Occupancy (IBC Table 1017.2)</th><th>Unsprinklered</th><th>Sprinklered</th></tr>
+      <tr><td>Assembly, Educational, F-1, Mercantile, Residential, S-1</td><td>200 ft</td><td>250 ft</td></tr>
+      <tr><td>Business (B)</td><td>200 ft</td><td>300 ft</td></tr>
+      <tr><td>F-2, S-2, U</td><td>300 ft</td><td>400 ft</td></tr>
+      <tr><td>High Hazard (H)</td><td>Not permitted (sprinklers required)</td><td>75 ft (H-1) up to 200 ft (H-5)</td></tr>
     </table>
     <div class="note"><strong>Dead-end corridors:</strong> Generally max 20' (unsprinklered) or 50' (sprinklered) in most occupancy groups. Check IBC Table 1020.4.</div>
   </div>
@@ -388,7 +440,7 @@
     </div>
     <table>
       <tr><th>Facade</th><th>Solar Characteristics</th><th>Best For</th></tr>
-      <tr><td>South</td><td>Maximum solar gain, high winter sun, low summer</td><td>Passive solar heating, daylighting, solar panels</td></tr>
+      <tr><td>South</td><td>Maximum solar gain; low winter sun, high summer sun (easy to shade with overhangs)</td><td>Passive solar heating, daylighting, solar panels</td></tr>
       <tr><td>North</td><td>Minimal direct sun, consistent diffuse light</td><td>Art studios, galleries, server rooms</td></tr>
       <tr><td>East</td><td>Morning sun, cool-warm transition</td><td>Bedrooms, breakfast areas</td></tr>
       <tr><td>West</td><td>Intense afternoon sun, heat gain</td><td>Needs shading — worst for glazing in hot climates</td></tr>
@@ -404,7 +456,7 @@
       <tr><td>Slope calculation</td><td>Rise ÷ Run (or elevation change ÷ horizontal distance)</td></tr>
       <tr><td>Contours crossing a stream</td><td>V-shapes point UPSTREAM</td></tr>
       <tr><td>Contours crossing a ridge</td><td>V-shapes point DOWNHILL</td></tr>
-      <tr><td>Cut &amp; Fill</td><td>Contour lines rerouted closer = cut; farther apart = fill</td></tr>
+      <tr><td>Cut &amp; Fill</td><td>Proposed contour moved uphill (toward higher ground) = cut; moved downhill = fill</td></tr>
       <tr><td>Max accessible path slope</td><td>1:20 (5%) without handrails</td></tr>
       <tr><td>Max driveway slope</td><td>Typically 10%–15% depending on jurisdiction</td></tr>
     </table>
@@ -437,6 +489,203 @@
       <tr><td>Right-of-way</td><td>Public passage over private land (roads, utilities)</td></tr>
     </table>
   </div>
+</div>
+
+<!-- ============ BUILDING ANALYSIS ============ -->
+<div id="building" class="section">
+  <div class="card">
+    <h2>Building Analysis &amp; Programming (37–43% of PA)</h2>
+    <p>This is the biggest section of the exam. NCARB's objectives ask you to evaluate a new or existing building against the program, use reports to inform it, prioritize program components, work out spatial and functional relationships, check whether the budget and schedule fit the scope, pick building and structural systems, and read the diagrams that show all of it.</p>
+    <table>
+      <tr><th>Objective</th><th>What it means on the exam</th></tr>
+      <tr><td>4.1 Building attributes</td><td>Size, condition, code status and fit of a new or existing building</td></tr>
+      <tr><td>4.2 Reports &amp; assessments</td><td>Pull the facts that matter out of surveys, studies and condition reports</td></tr>
+      <tr><td>4.3 Program priorities</td><td>Needs vs. wants; what gets cut first</td></tr>
+      <tr><td>4.4 Spatial relationships</td><td>Adjacency matrices, bubble diagrams, stacking</td></tr>
+      <tr><td>4.5 Budget &amp; schedule</td><td>Can this scope be built for this money in this time?</td></tr>
+      <tr><td>4.6 Systems</td><td>Structural and building systems that suit the program, budget and schedule</td></tr>
+      <tr><td>4.7 Graphics</td><td>Reading plans, diagrams and charts in case studies</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>The Programming Process</h2>
+    <div class="mnemonic"><div class="phrase">"Go Find Clever New Problems"</div><div class="meaning">Goals → Facts → Concepts → Needs → Problem statement (the Problem Seeking method)</div></div>
+    <table>
+      <tr><th>Step</th><th>Question it answers</th></tr>
+      <tr><td>Goals</td><td>What does the client want to achieve?</td></tr>
+      <tr><td>Facts</td><td>What do we know? (site, users, codes, budget)</td></tr>
+      <tr><td>Concepts</td><td>How will we meet the goals? (organizing ideas)</td></tr>
+      <tr><td>Needs</td><td>How much space, money and time?</td></tr>
+      <tr><td>Problem</td><td>What are the key conditions the design must answer?</td></tr>
+    </table>
+    <p style="margin-top:8px;">Each step is weighed against four considerations: <strong>function, form, economy and time</strong>.</p>
+  </div>
+
+  <div class="card">
+    <h2>Space Program Math</h2>
+    <div class="formula-box">
+      <div class="formula">Gross = Net ÷ Efficiency</div>
+      <div class="legend">Efficiency = net assignable ÷ gross. Grossing factor = gross ÷ net = 1 ÷ efficiency.</div>
+    </div>
+    <table>
+      <tr><th>Efficiency</th><th>Grossing factor</th></tr>
+      <tr><td>85%</td><td>1.18</td></tr>
+      <tr><td>80%</td><td>1.25</td></tr>
+      <tr><td>75%</td><td>1.33</td></tr>
+      <tr><td>60%</td><td>1.67</td></tr>
+      <tr><td>50%</td><td>2.00</td></tr>
+    </table>
+    <div class="card" style="background:var(--bg);">
+      <p><strong>Mixed program:</strong> 18,000 NASF offices at 80% plus 6,000 NASF labs at 55%.</p>
+      <p style="margin-top:8px;">Offices: 18,000 ÷ 0.80 = <strong>22,500 GSF</strong></p>
+      <p>Labs: 6,000 ÷ 0.55 = <strong>10,909 GSF</strong></p>
+      <p>Total = <strong>33,409 GSF</strong></p>
+      <p style="color:var(--warn); margin-top:8px;">Gross up each space type at its own efficiency, then add. Don't average the percentages.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Adjacency Matrix</h2>
+    <p>A day spa program. Read across a row to see how each space relates to the others.</p>
+    <div class="diagram-wrap">
+    <table class="adj">
+      <tr><th></th><th>Reception</th><th>Lounge</th><th>Treatment</th><th>Lockers</th><th>Staff</th><th>Mech</th></tr>
+      <tr><th>Reception</th><td>–</td><td class="a1">●</td><td class="a2">○</td><td class="a2">○</td><td class="a2">○</td><td class="a3">×</td></tr>
+      <tr><th>Lounge</th><td class="a1">●</td><td>–</td><td class="a1">●</td><td class="a1">●</td><td></td><td class="a3">×</td></tr>
+      <tr><th>Treatment</th><td class="a2">○</td><td class="a1">●</td><td>–</td><td class="a2">○</td><td class="a1">●</td><td class="a3">×</td></tr>
+      <tr><th>Lockers</th><td class="a2">○</td><td class="a1">●</td><td class="a2">○</td><td>–</td><td></td><td></td></tr>
+      <tr><th>Staff</th><td class="a2">○</td><td></td><td class="a1">●</td><td></td><td>–</td><td class="a2">○</td></tr>
+      <tr><th>Mech</th><td class="a3">×</td><td class="a3">×</td><td class="a3">×</td><td></td><td class="a2">○</td><td>–</td></tr>
+    </table>
+    </div>
+    <p class="adj-key"><span class="a1">● must be adjacent</span> <span class="a2">○ nearby</span> <span>blank = no need</span> <span class="a3">× keep apart</span></p>
+
+    <h3>The same program as a bubble diagram</h3>
+    <div class="diagram-wrap">
+    <svg viewBox="0 0 520 300" width="100%" style="max-width:520px" role="img" aria-label="Bubble diagram of a day spa program">
+      <line class="l1" x1="110" y1="80" x2="250" y2="80"/>
+      <line class="l1" x1="250" y1="80" x2="400" y2="80"/>
+      <line class="l1" x1="250" y1="80" x2="250" y2="210"/>
+      <line class="l1" x1="400" y1="80" x2="390" y2="212"/>
+      <line class="l2" x1="110" y1="80" x2="390" y2="212"/>
+      <line class="l2" x1="250" y1="210" x2="400" y2="80"/>
+      <line class="l2" x1="390" y1="212" x2="482" y2="262"/>
+      <circle class="b" cx="110" cy="80" r="48"/><text class="bt" x="110" y="85">Reception</text>
+      <circle class="b" cx="250" cy="80" r="44"/><text class="bt" x="250" y="85">Lounge</text>
+      <circle class="b big" cx="400" cy="80" r="58"/><text class="bt" x="400" y="85">Treatment</text>
+      <circle class="b" cx="250" cy="210" r="42"/><text class="bt" x="250" y="215">Lockers</text>
+      <circle class="b" cx="390" cy="212" r="38"/><text class="bt" x="390" y="217">Staff</text>
+      <circle class="b mech" cx="482" cy="262" r="28"/><text class="bt" x="482" y="267">Mech</text>
+    </svg>
+    </div>
+    <p class="adj-key"><span class="a1">thick line = primary</span> <span class="a2">dashed = secondary</span> <span>bubble size = relative area</span></p>
+    <div class="note"><strong>Exam tip:</strong> keep noisy or service spaces (mechanical, loading, trash) away from quiet or public ones, and give staff a back-of-house route that doesn't cross guest circulation.</div>
+  </div>
+
+  <div class="card">
+    <h2>Existing Buildings</h2>
+    <h3>Secretary of the Interior's Standards: four treatments</h3>
+    <div class="diagram-wrap">
+    <svg viewBox="0 0 560 120" width="100%" style="max-width:560px" role="img" aria-label="Historic treatments from least to most intervention">
+      <line class="axis" x1="20" y1="60" x2="540" y2="60"/>
+      <polygon class="arrowhead" points="540,54 552,60 540,66"/>
+      <circle class="dot" cx="70" cy="60" r="9"/><text class="st" x="70" y="38">Preservation</text><text class="ss" x="70" y="90">keep &amp; maintain</text>
+      <circle class="dot" cx="210" cy="60" r="9"/><text class="st" x="210" y="38">Rehabilitation</text><text class="ss" x="210" y="90">new use, keep character</text>
+      <circle class="dot" cx="350" cy="60" r="9"/><text class="st" x="350" y="38">Restoration</text><text class="ss" x="350" y="90">back to one period</text>
+      <circle class="dot" cx="490" cy="60" r="9"/><text class="st" x="490" y="38">Reconstruction</text><text class="ss" x="490" y="90">recreate what's lost</text>
+      <text class="ss" x="20" y="114" style="text-anchor:start">less intervention</text><text class="ss" x="540" y="114" style="text-anchor:end">more</text>
+    </svg>
+    </div>
+    <div class="mnemonic"><div class="phrase">"Pause, Reuse, Rewind, Rebuild"</div><div class="meaning">Preservation, Rehabilitation (adaptive reuse), Restoration, Reconstruction</div></div>
+    <h3>Code path for existing buildings</h3>
+    <table>
+      <tr><th>Situation</th><th>What applies</th></tr>
+      <tr><td>Repair, alteration, addition or change of occupancy</td><td>International Existing Building Code (IEBC)</td></tr>
+      <tr><td>Change of occupancy</td><td>Check the new group's egress, fire protection and accessibility; it can trigger upgrades</td></tr>
+      <tr><td>Alteration to a primary function area (ADA)</td><td>Accessible path of travel to it, up to 20% of the alteration cost</td></tr>
+    </table>
+    <h3>Reports that feed the program</h3>
+    <table>
+      <tr><th>Report</th><th>Tells you</th></tr>
+      <tr><td>Property condition assessment</td><td>Condition and remaining life of systems</td></tr>
+      <tr><td>Hazardous materials survey</td><td>Asbestos, lead paint, PCBs before demolition</td></tr>
+      <tr><td>Structural assessment</td><td>Capacity for new loads or added floors</td></tr>
+      <tr><td>Geotechnical report</td><td>Soil bearing, water table, foundation type</td></tr>
+      <tr><td>ALTA/NSPS survey</td><td>Boundaries, easements, utilities, encroachments</td></tr>
+      <tr><td>Phase I ESA</td><td>Records review and site visit for contamination risk; no sampling (Phase II samples)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Budget &amp; Schedule Feasibility</h2>
+    <div class="formula-box">
+      <div class="formula">Total = Construction + Soft Costs + Contingency</div>
+      <div class="legend">Construction = gross SF × cost per SF. On the exam, use the percentages the question gives.</div>
+    </div>
+    <div class="card" style="background:var(--bg);">
+      <p><strong>Problem:</strong> The client has $5,000,000 total. Soft costs are 25% of construction and contingency is 10% of construction. Construction runs $325/SF. How big can the building be?</p>
+      <p style="margin-top:8px;">Step 1: Construction = 5,000,000 ÷ 1.35 = <strong>$3,703,704</strong></p>
+      <p>Step 2: Area = 3,703,704 ÷ 325 = <strong>11,396 GSF</strong></p>
+      <p style="color:var(--warn); margin-top:8px;">Divide by (1 + all the percentages). Dividing $5M straight by $325 overstates the area by about 35%.</p>
+    </div>
+    <div class="diagram-wrap">
+    <svg viewBox="0 0 560 90" width="100%" style="max-width:560px" role="img" aria-label="Budget split: construction 74 percent, soft costs 19 percent, contingency 7 percent">
+      <rect class="seg1" x="10" y="20" width="400" height="34" rx="4"/>
+      <rect class="seg2" x="410" y="20" width="100" height="34"/>
+      <rect class="seg3" x="510" y="20" width="40" height="34" rx="4"/>
+      <text class="segt" x="210" y="42">Construction 74%</text>
+      <text class="segt" x="460" y="42">Soft 19%</text>
+      <text class="ss" x="530" y="74">Cont. 7%</text>
+    </svg>
+    </div>
+    <h3>When the program doesn't fit the budget</h3>
+    <div class="mnemonic"><div class="phrase">"Scope, quality, money: move one, or move the deadline"</div><div class="meaning">Cut area, lower quality, raise the budget, or phase the work. Schedule is the fourth lever.</div></div>
+    <table>
+      <tr><th>Delivery approach</th><th>Schedule effect</th></tr>
+      <tr><td>Design-bid-build</td><td>Longest; design finishes before bidding</td></tr>
+      <tr><td>Fast-track</td><td>Shorter; construction starts while design continues</td></tr>
+      <tr><td>Design-build</td><td>Shorter; one contract, overlapping phases</td></tr>
+      <tr><td>CM at risk</td><td>Contractor input during design; can fast-track</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Structural Systems: Typical Spans</h2>
+    <p>Ballpark economical spans to compare options. They vary with loads and depth.</p>
+    <div class="diagram-wrap">
+    <svg viewBox="0 0 600 300" width="100%" style="max-width:600px" role="img" aria-label="Typical economical spans by structural system">
+      <g class="grid">
+        <line x1="190" y1="20" x2="190" y2="260"/><line x1="280" y1="20" x2="280" y2="260"/><line x1="370" y1="20" x2="370" y2="260"/><line x1="460" y1="20" x2="460" y2="260"/><line x1="550" y1="20" x2="550" y2="260"/>
+      </g>
+      <text class="ss" x="190" y="280">0</text><text class="ss" x="280" y="280">25</text><text class="ss" x="370" y="280">50</text><text class="ss" x="460" y="280">75</text><text class="ss" x="550" y="280">100 ft</text>
+      <text class="rl" x="180" y="42">Wood joists</text><rect class="span" x="226" y="30" width="54" height="16" rx="3"/>
+      <text class="rl" x="180" y="76">Concrete flat plate</text><rect class="span" x="244" y="64" width="54" height="16" rx="3"/>
+      <text class="rl" x="180" y="110">Steel beams</text><rect class="span" x="262" y="98" width="72" height="16" rx="3"/>
+      <text class="rl" x="180" y="144">Post-tensioned slab</text><rect class="span" x="280" y="132" width="54" height="16" rx="3"/>
+      <text class="rl" x="180" y="178">Open-web steel joists</text><rect class="span" x="262" y="166" width="144" height="16" rx="3"/>
+      <text class="rl" x="180" y="212">Precast double tees</text><rect class="span" x="298" y="200" width="144" height="16" rx="3"/>
+      <text class="rl" x="180" y="246">Steel trusses, space frames</text><rect class="span" x="406" y="234" width="144" height="16" rx="3"/><polygon class="arrowhead" points="552,234 566,242 552,250"/>
+    </svg>
+    </div>
+    <h3>IBC construction types in one line each</h3>
+    <table>
+      <tr><th>Type</th><th>Meaning</th></tr>
+      <tr><td>I and II</td><td>Noncombustible (I is more fire resistive)</td></tr>
+      <tr><td>III</td><td>Noncombustible exterior walls, any interior</td></tr>
+      <tr><td>IV</td><td>Heavy timber and mass timber (IV-A, IV-B, IV-C, IV-HT)</td></tr>
+      <tr><td>V</td><td>Any material permitted by code, usually wood frame</td></tr>
+    </table>
+    <p style="margin-top:8px;">Allowable height, stories and area come from IBC Tables 504.3, 504.4 and 506.2, by occupancy and construction type.</p>
+  </div>
+
+  <div class="card">
+    <h2>Building Analysis Quiz: 15 Questions</h2>
+    <p style="color:var(--text2);">Pick your answers, then tap "Grade This Quiz" at the bottom.</p>
+  </div>
+  <div id="baquiz"></div>
+  <button class="quiz-btn" onclick="gradeBA()">Grade This Quiz</button>
+  <div id="baScore" class="score-display"></div>
 </div>
 
 <!-- ============ FORMULAS ============ -->
@@ -562,7 +811,7 @@
       </div>
       <div class="flashcard" onclick="this.classList.toggle('flipped')">
         <div class="q">Egress factor: stairway (sprinklered)?</div>
-        <div class="a">0.2 inch per occupant</div>
+        <div class="a">0.2 inch per occupant<br>(only with an emergency voice/alarm system too)</div>
         <div class="hint">click to flip</div>
       </div>
       <div class="flashcard" onclick="this.classList.toggle('flipped')">
@@ -632,7 +881,7 @@
       </div>
       <div class="flashcard" onclick="this.classList.toggle('flipped')">
         <div class="q">Max travel distance (sprinklered, most occupancies)?</div>
-        <div class="a">250 feet</div>
+        <div class="a">250 feet<br>(Business is 300 feet)</div>
         <div class="hint">click to flip</div>
       </div>
       <div class="flashcard" onclick="this.classList.toggle('flipped')">
@@ -698,7 +947,7 @@
     <label><input type="radio" name="q5" value="b"> 0.2 inch per occupant</label>
     <label><input type="radio" name="q5" value="c"> 0.3 inch per occupant</label>
     <label><input type="radio" name="q5" value="d"> 0.4 inch per occupant</label>
-    <div class="explanation">0.3" per occupant for stairways (unsprinklered). Sprinklered = 0.2". For corridors: 0.2" unsprinklered, 0.15" sprinklered.</div>
+    <div class="explanation">0.3" per occupant for stairways (unsprinklered). Sprinklered with an emergency voice/alarm system = 0.2". For corridors: 0.2" standard, 0.15" sprinklered with voice alarm.</div>
   </div>
 
   <div class="quiz-q" data-correct="b">
@@ -755,13 +1004,13 @@
     <div class="explanation">18" on pull side, 12" on push side (with closer and latch). This space lets a wheelchair user reach the handle while clearing the door swing.</div>
   </div>
 
-  <div class="quiz-q" data-correct="b">
+  <div class="quiz-q" data-correct="c">
     <h4>12. What is the max travel distance to an exit in a sprinklered business occupancy?</h4>
     <label><input type="radio" name="q12" value="a"> 200 feet</label>
     <label><input type="radio" name="q12" value="b"> 250 feet</label>
     <label><input type="radio" name="q12" value="c"> 300 feet</label>
     <label><input type="radio" name="q12" value="d"> 150 feet</label>
-    <div class="explanation">250 ft for sprinklered buildings in most occupancies (B, M, R, etc.). Unsprinklered = 200 ft. High hazard (H) = 75 ft regardless.</div>
+    <div class="explanation">300 ft for a sprinklered Business (B) occupancy per IBC Table 1017.2. Unsprinklered B = 200 ft. Most other occupancies (A, E, F-1, M, R, S-1) top out at 250 ft sprinklered.</div>
   </div>
 
   <div class="quiz-q" data-correct="c">
@@ -840,6 +1089,127 @@ function gradeQuiz() {
 
   scoreEl.scrollIntoView({ behavior: 'smooth' });
 }
+
+/* ===== Building Analysis quiz ===== */
+const BA_QUESTIONS = [
+  {q:"A program uses a grossing factor of 1.25. What building efficiency is that?", o:["75%","80%","125%","20%"], a:1, e:"Efficiency = 1 ÷ grossing factor = 1 ÷ 1.25 = 80%."},
+  {q:"A client needs 24,000 SF of net assignable space at 75% efficiency. What gross area is needed?", o:["30,000 SF","18,000 SF","32,000 SF","31,500 SF"], a:2, e:"Gross = Net ÷ Efficiency = 24,000 ÷ 0.75 = 32,000 SF. Multiplying by 1.25 (30,000) would assume 80% efficiency."},
+  {q:"Total budget is $6,000,000. Soft costs are 20% and contingency 10%, both of construction cost. Construction runs $300/SF. What is the max gross area?", o:["20,000 SF","16,667 SF","15,385 SF","14,000 SF"], a:2, e:"Construction = 6,000,000 ÷ 1.30 = $4,615,385. Area = 4,615,385 ÷ 300 = 15,385 SF."},
+  {q:"A 1910 warehouse becomes loft apartments while keeping its brick, timber and windows. Which treatment is this?", o:["Preservation","Rehabilitation","Restoration","Reconstruction"], a:1, e:"Rehabilitation allows a new use while keeping the features that give the building its character. It is the usual treatment for adaptive reuse."},
+  {q:"A courthouse is returned to its 1920s appearance and later additions are removed. Which treatment is this?", o:["Restoration","Rehabilitation","Preservation","Reconstruction"], a:0, e:"Restoration depicts the building at one period of its history and removes work from other periods."},
+  {q:"What does a Phase I Environmental Site Assessment include?", o:["Soil and groundwater sampling","Records review and a site visit, with no sampling","Asbestos abatement","A geotechnical boring log"], a:1, e:"Phase I is records research, interviews and a site visit. Sampling happens in Phase II if Phase I finds a concern."},
+  {q:"In an adjacency matrix, a filled dot between two spaces means:", o:["Keep them apart","They need no relationship","They must be adjacent","They share a mechanical system"], a:2, e:"A filled symbol is the strongest relationship: a required, direct adjacency."},
+  {q:"In a day spa, which space should be kept away from the treatment rooms?", o:["Relaxation lounge","Staff prep","Mechanical room","Locker rooms"], a:2, e:"Mechanical rooms bring noise and vibration. Treatment rooms need quiet, so separate them."},
+  {q:"The program is 15% over budget. The client won't add money or lower quality. What is left?", o:["Reduce scope (area)","Add contingency","Switch to design-bid-build","Raise the cost per SF"], a:0, e:"With budget and quality fixed, scope is the lever: cut or phase area. Schedule can also shift."},
+  {q:"An existing office building changes to a restaurant. Which code governs the work?", o:["IRC","IEBC","IECC only","IFC only"], a:1, e:"The International Existing Building Code covers repair, alteration, addition and change of occupancy in existing buildings."},
+  {q:"A school gym needs a 90 ft clear roof span. Which system fits?", o:["Wood joists","Concrete flat plate","Steel trusses or long-span joists","Post-tensioned slab"], a:2, e:"Long spans of 60 ft and up call for steel trusses, long-span joists or space frames. The others top out far shorter."},
+  {q:"Put the Problem Seeking steps in order.", o:["Facts, goals, needs, concepts, problem","Goals, facts, concepts, needs, problem","Needs, goals, facts, concepts, problem","Concepts, facts, goals, needs, problem"], a:1, e:"Goals, Facts, Concepts, Needs, Problem. Mnemonic: Go Find Clever New Problems."},
+  {q:"Which report tells you the soil's allowable bearing pressure?", o:["ALTA/NSPS survey","Phase I ESA","Geotechnical report","Property condition assessment"], a:2, e:"The geotechnical report gives bearing capacity, water table and recommended foundation types."},
+  {q:"Which approach shortens the schedule by starting construction before design is complete?", o:["Design-bid-build","Fast-track","Competitive sealed bidding","Value engineering"], a:1, e:"Fast-track overlaps design and construction. Design-bid-build is sequential and slowest."},
+  {q:"A program has 18,000 NASF of offices at 80% efficiency and 6,000 NASF of labs at 55%. What is the total gross area?", o:["30,000 SF","34,286 SF","32,500 SF","33,409 SF"], a:3, e:"18,000 ÷ 0.80 = 22,500, plus 6,000 ÷ 0.55 = 10,909, for 33,409 SF. Gross up each type at its own efficiency."}
+];
+(function buildBA(){
+  const wrap = document.getElementById('baquiz');
+  if (!wrap) return;
+  const letters = ['A','B','C','D'];
+  BA_QUESTIONS.forEach((item, i) => {
+    const d = document.createElement('div');
+    d.className = 'ba-q';
+    const h = document.createElement('h4'); h.textContent = (i+1) + '. ' + item.q; d.appendChild(h);
+    item.o.forEach((opt, j) => {
+      const l = document.createElement('label');
+      const r = document.createElement('input'); r.type='radio'; r.name='ba'+i; r.value=j; r.id='ba'+i+'_'+j;
+      l.htmlFor = r.id; l.appendChild(r); l.appendChild(document.createTextNode(' ' + opt)); d.appendChild(l);
+    });
+    const ex = document.createElement('div'); ex.className='explanation'; d.appendChild(ex);
+    wrap.appendChild(d);
+  });
+  window.gradeBA = function(){
+    let correct = 0;
+    document.querySelectorAll('#baquiz .ba-q').forEach((d, i) => {
+      const item = BA_QUESTIONS[i];
+      const sel = d.querySelector('input[name="ba'+i+'"]:checked');
+      const ex = d.querySelector('.explanation');
+      ex.classList.remove('correct','wrong');
+      if (sel && Number(sel.value) === item.a) { correct++; ex.classList.add('correct'); ex.textContent = '✓ Correct! ' + item.e; }
+      else { ex.classList.add('wrong'); ex.textContent = '✗ Incorrect. The answer is ' + letters[item.a] + '. ' + item.e; }
+    });
+    const pct = Math.round(correct / BA_QUESTIONS.length * 100);
+    const s = document.getElementById('baScore');
+    s.textContent = 'Score: ' + correct + '/' + BA_QUESTIONS.length + ' (' + pct + '%)';
+    s.style.color = pct >= 80 ? 'var(--accent3)' : pct >= 60 ? 'var(--warn)' : 'var(--danger)';
+    s.scrollIntoView({behavior:'smooth'});
+  };
+})();
+
+/* ===== Listen mode: reads the open tab aloud ===== */
+(function listenMode(){
+  const synth = window.speechSynthesis;
+  const playBtn = document.getElementById('listenBtn');
+  const rate = document.getElementById('listenRate');
+  if (!synth || !playBtn) { const bar = document.querySelector('.listen'); if (bar) bar.hidden = true; return; }
+  let speaking = false, lastEl = null;
+
+  function say(t){
+    return t
+      .replace(/(\d)\s*["″]/g, '$1 inches').replace(/(\d)\s*['′]/g, '$1 feet')
+      .replace(/(\d)\s*[–-]\s*(\d)/g, '$1 to $2')
+      .replace(/(\d):(\d)/g, '$1 to $2')
+      .replace(/÷/g, ' divided by ').replace(/×/g, ' times ').replace(/=/g, ' equals ')
+      .replace(/→/g, ', then ').replace(/≥|&ge;/g, ' at least ').replace(/≤|&le;/g, ' up to ')
+      .replace(/\bSF\b/g, 'square feet').replace(/\bGSF\b/g, 'gross square feet').replace(/\bNASF\b/g, 'net square feet')
+      .replace(/\bpsf\b/g, 'pounds per square foot').replace(/\bcfs\b/g, 'cubic feet per second')
+      .replace(/[●]/g, 'must be adjacent').replace(/[○]/g, 'nearby').replace(/[×✗]/g, '').replace(/[✓☼]/g, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function chunks(section){
+    const out = [];
+    const sel = 'h2,h3,h4,p,tr,.mnemonic,.formula-box,.note,.flashcard,label';
+    const nodes = section.querySelectorAll(sel);
+    nodes.forEach(el => {
+      if (el.closest('svg')) return;
+      const parent = el.parentElement && el.parentElement.closest(sel);
+      if (parent && section.contains(parent)) return;
+      if (el.offsetParent === null && !el.classList.contains('flashcard')) return;
+      let t;
+      if (el.tagName === 'TR') {
+        const cells = [...el.children].map(c => c.textContent.trim()).filter(Boolean);
+        if (el.closest('table.adj')) return;
+        t = cells.join(': ');
+      } else if (el.classList.contains('flashcard')) {
+        const q = el.querySelector('.q'), a = el.querySelector('.a');
+        t = (q ? q.textContent : '') + ' ... ' + (a ? a.innerText || a.textContent : '');
+      } else if (el.classList.contains('mnemonic')) {
+        t = [...el.children].map(c => c.textContent).join('. ');
+      } else {
+        t = el.textContent;
+      }
+      t = say(t || '');
+      if (t) out.push({el, t});
+    });
+    return out;
+  }
+  function mark(el){ if (lastEl) lastEl.classList.remove('speaking'); lastEl = el; if (el) { el.classList.add('speaking'); el.scrollIntoView({block:'center', behavior:'smooth'}); } }
+  function stop(){ synth.cancel(); speaking = false; mark(null); playBtn.textContent = '▶ Listen'; playBtn.classList.remove('on'); }
+  function play(){
+    const section = document.querySelector('.section.active');
+    if (!section) return;
+    synth.cancel();
+    const list = chunks(section);
+    if (!list.length) return;
+    speaking = true; playBtn.textContent = '■ Stop'; playBtn.classList.add('on');
+    list.forEach((c, i) => {
+      const u = new SpeechSynthesisUtterance(c.t);
+      u.rate = Number(rate.value) || 1;
+      u.onstart = () => mark(c.el);
+      if (i === list.length - 1) u.onend = () => { if (speaking) stop(); };
+      synth.speak(u);
+    });
+  }
+  playBtn.addEventListener('click', () => speaking ? stop() : play());
+  rate.addEventListener('change', () => { if (speaking) play(); });
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { if (speaking) stop(); }));
+})();
 </script>
 </body>
 </html>
